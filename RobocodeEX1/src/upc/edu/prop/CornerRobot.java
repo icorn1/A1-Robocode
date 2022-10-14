@@ -44,7 +44,7 @@ public class CornerRobot  extends TeamRobot
         while(true) {                   // Dos casos: Si el robot es el lider, o si no ho és.
             if(LIDER){                  // LIDER: Mou el radar molt rapid i continua fent girs fins escanejar un robot. 
                 setTurnRadarRight(10000);
-			    setTurnRight(5 * direccioGir);
+                setTurnRight(5 * direccioGir);
             }
             else{                       // CORNERROBOT: Prioritza anar al corner si encara no hi ha arribat (ex: s'ha xocat amb un robot o una paret). 
                 if(!onCorner){          // Si hi ha arribat, llavors ja pot començar a detectar robots i fer moviment sentinella.
@@ -246,6 +246,7 @@ public class CornerRobot  extends TeamRobot
     }
 
     public void goToCorner(int corn){
+        out.println("Vaig al corner pa\n");
         double cornerPosX, cornerPosY;
         double angle;
         // PER AL CORNER "corn", EL ROBOT SEGUEIX EL SEGUENT PROCEDIMENT:
