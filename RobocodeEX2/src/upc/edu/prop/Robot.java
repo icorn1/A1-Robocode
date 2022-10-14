@@ -33,14 +33,12 @@ public class Robot extends TeamRobot{
             back(150);
             ahead(150);
             execute(); 
-
         }
     }
     
     public void onScannedRobot(ScannedRobotEvent e) {
         if(!isTeammate(e.getName())){
             if(!firstScan){   
-                //out.println(getTarget());
                 if(e.getName() == getTarget()){
                     // Calcular el bearing del enemic
                     double enemyBearing = this.getHeading() + e.getBearing();
@@ -60,23 +58,17 @@ public class Robot extends TeamRobot{
                     resume();
                     scan();
                 }
-                else{
-                  //  out.println("->"+getTarget());
-                }
             }
             else{
                 firstScan = false;
             }
-            out.println("Poso a " + e.getName()+ " a la llista");
             if(!eliminant)
                 distancies.put(e.getName(), e.getDistance());
             else eliminant = false;
         }
     }
     public void onRobotDeath(RobotDeathEvent e){
-        out.println("Robot: " + e.getName() + " ha mort.");
         if(!isTeammate(e.getName())){
-            out.println("-> Elimino " + e.getName() + " de la llista.");
             distancies.remove(e.getName());
             eliminant = true;
         }
@@ -90,7 +82,6 @@ public class Robot extends TeamRobot{
                 min = set.getValue();
                 robotMesProper = set.getKey();
             } 
-            out.println(set.getKey());
         }
         return robotMesProper;
     }
@@ -122,17 +113,6 @@ public class Robot extends TeamRobot{
     public double getAngleTo(double xOrg, double yOrg, double xDest, double yDest){
         return Math.toDegrees(Math.atan2(xDest-xOrg, yDest-yOrg));
     
-    }
-    public void goTo(double xDest, double yDest){
-        double cornerPosX, cornerPosY;
-        double angle;
-        
-        angle = getAngleTo(getX(), getY(), xDest, yDest);
-        turnRight(-getHeading() + angle);
-        ahead(calcDist(getX(), getY(), xDest, yDest));
-        
-
-        
     }
     
     public void onHitByBullet(HitByBulletEvent e){
