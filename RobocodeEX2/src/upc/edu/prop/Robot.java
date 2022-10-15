@@ -13,12 +13,13 @@ import static robocode.util.Utils.normalRelativeAngleDegrees;
  * @author icorn & almogawer
  */
 public class Robot extends TeamRobot{
-
+    static double prevEnergy = 100.0;
     private int direccioGir = 1;
     private int dist = 200;
     private boolean firstScan = true;
     private boolean eliminant = false;
     private Map<String, Double> distancies = new HashMap<String, Double>();
+    private Map<String, Double> energies = new HashMap<String, Double>();
     /*
      * Cada Robot comença a escanejar d'immediat. Han de fer un escaneig complet i el que tinguin més aprop, disparar-li.
      * Quan li disparen o es xoca amb un robot:
@@ -37,6 +38,9 @@ public class Robot extends TeamRobot{
     }
     
     public void onScannedRobot(ScannedRobotEvent e) {
+        
+      
+        
         if(!isTeammate(e.getName())){
             if(!firstScan){   
                 if(e.getName() == getTarget()){
@@ -53,6 +57,12 @@ public class Robot extends TeamRobot{
                     // Apuntar i disparar.
                     // Hem observat que si parem el robot per disparar, es millora l'eficiencia contra MyFirstTeam per un 2%.
                     stop();
+                    //
+                    if(/*getDistanceRemaining()==0.0 &&*/ energies.get(e.getName())-e.getEnergy()>0.0){
+                        setAhead(36*1);
+                    }
+                    energies.put(e.getName(), e.getEnergy());
+                    //
                     turnGunRight(normalRelativeAngleDegrees(theta - getGunHeading()));
                     fire(3);
                     resume();
@@ -62,8 +72,10 @@ public class Robot extends TeamRobot{
             else{
                 firstScan = false;
             }
-            if(!eliminant)
+            if(!eliminant){
+                energies.put(e.getName(), e.getEnergy());
                 distancies.put(e.getName(), e.getDistance());
+            }
             else eliminant = false;
         }
     }
