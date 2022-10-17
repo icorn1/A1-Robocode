@@ -3,8 +3,6 @@ package upc.edu.prop;
 import java.awt.Color;
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import robocode.*;
 import static robocode.util.Utils.normalRelativeAngleDegrees;
 
@@ -13,7 +11,7 @@ import static robocode.util.Utils.normalRelativeAngleDegrees;
  * @author icorn & almogawer
  */
 public class Robot extends TeamRobot{
-    private int dist = 400;
+    private int dist = 750;
     private boolean firstScan = true;
     private boolean eliminant = false;
     private Map<String, Double> distancies = new HashMap<String, Double>();
@@ -24,8 +22,6 @@ public class Robot extends TeamRobot{
      * Cada Robot comença a escanejar d'immediat. Han de fer un escaneig complet i el que tinguin més aprop, disparar-li.
      * Quan li disparen o es xoca amb un robot:
      *      Es mou en direccio aleatoria.
-     *      
-     * 
      */
     public void run() {
         inici();
@@ -47,7 +43,7 @@ public class Robot extends TeamRobot{
                         setAhead(36);               //avancem la mida del robot cap endavant
                     }
                     energies.put(e.getName(), e.getEnergy());
-                    
+
                     // Obtenim l'angle al que es preveu que anira el robot, per disparar-lo.
                     double theta = getAngleMoviment(e.getDistance(), e.getBearing());
                     double firePower = Math.min(900 / e.getDistance(), 3);
@@ -75,34 +71,20 @@ public class Robot extends TeamRobot{
             anglesEquip.put(e.getName(), angle);
         }
     }
-    // computes the absolute bearing between two points
 
     public void onRobotDeath(RobotDeathEvent e){
         if(!isTeammate(e.getName())){
             distancies.remove(e.getName());
+            energies.remove(e.getName());
             eliminant = true;
         }
     }
     
-    public void onHitRobot(HitRobotEvent e){
-       // setBack(50);
-    }
-
-    @Override 
-    public void onMessageReceived(MessageEvent event){
-       // Punt p = (Punt) event.getMessage();     //Convertim el missatge en Missatge. 
-       // posicions.put(event.getSender(), p);    // Guardem la posicio del compa a la variable.
-    }
- 
     public void onHitByBullet(HitByBulletEvent e){
         setTurnRight(normalRelativeAngleDegrees(90 - (getHeading() - e.getHeading())));
 		setAhead(dist);
 		dist *= -1;
 		scan();
-    }
-
-    public void onHitWall (HitWallEvent e){
-        //setTurnRight(90);
     }
 
     public void inici() {
@@ -142,7 +124,7 @@ public class Robot extends TeamRobot{
     public boolean friendlyFire(double angle){
         // Funció per, donat un angle "a" i sabent els angles de nosaltres als companys, detectar si "a" es similar a algun angle i evitar friendly fire
         for (Map.Entry<String, Double> set : anglesEquip.entrySet()) {
-            int margeAngles = 5; 
+            int margeAngles = 7; 
             int angleCompanyArrodonit = (int) Math.round(set.getValue());
             if(angleCompanyArrodonit - margeAngles < angle && angleCompanyArrodonit + margeAngles > angle) {
                 return true; 
@@ -175,6 +157,3 @@ public class Robot extends TeamRobot{
         return Math.toDegrees(Math.atan2(dx, dy));
     }
 }
-
-    
-
