@@ -7,7 +7,6 @@ import robocode.*;
 import static robocode.util.Utils.normalRelativeAngleDegrees;
 
 /**
- *
  * @author icorn & almogawer
  */
 public class Robot extends TeamRobot{
@@ -20,8 +19,12 @@ public class Robot extends TeamRobot{
 
     /*
      * Cada Robot comença a escanejar d'immediat. Han de fer un escaneig complet i el que tinguin més aprop, disparar-li.
-     * Quan li disparen o es xoca amb un robot:
-     *      Es mou en direccio aleatoria.
+     * Quan li disparen:
+     *      Es mou en direcció oposada al dispar.
+     * Quan escaneja un aliat: 
+     *      Guarda el seu angle i evita disparar-li indirectament.
+     * while true:
+     *      Mou-te endevant i endarrere i continua escanejant.
      */
     public void run() {
         inici();
@@ -34,10 +37,10 @@ public class Robot extends TeamRobot{
     }
     
     public void onScannedRobot(ScannedRobotEvent e) {
-        if(!isTeammate(e.getName())){
-            if(!firstScan){   
+        if(!isTeammate(e.getName())){   
+            if(!firstScan){             // If de seguretat
                 if(e.getName() == getTarget()){
-                    // Hem observat que si parem el robot per disparar, es millora l'eficiencia contra MyFirstTeam per un 2%.
+                    // Hem observat que si parem el robot per disparar, es millora l'eficiencia per un 2%.
                     stop();
                     if(energies.get(e.getName())-e.getEnergy()>0){ //mirem si ha disparat el enemic escanejat mes proper amb la diferencia de energia
                         setAhead(36);               //avancem la mida del robot cap endavant
@@ -52,7 +55,7 @@ public class Robot extends TeamRobot{
                         setFire(firePower);
                     }
                     resume();
-                    scan();
+                    scan(); //Tornem a cridar el mètode.
                 }
             }
             else{
@@ -60,6 +63,7 @@ public class Robot extends TeamRobot{
             }
 
             if(!eliminant){
+                // If de seguretat per errors de paralelisme.
                 energies.put(e.getName(), e.getEnergy());
                 distancies.put(e.getName(), e.getDistance());
             }
@@ -67,20 +71,29 @@ public class Robot extends TeamRobot{
         }
         else{
             // Obtenim l'angle al que es preveu que anira el robot, per emmagatzemar-ho.
-            double angle = getAngleMoviment(e.getDistance(), e.getBearing());
-            anglesEquip.put(e.getName(), angle);
+            if(!eliminant){
+                double angle = getAngleMoviment(e.getDistance(), e.getBearing());
+                anglesEquip.put(e.getName(), angle);
+            }
+            else eliminant = false;
         }
     }
 
     public void onRobotDeath(RobotDeathEvent e){
+        // Eliminem del Hashmap l'informacio relacionada.
         if(!isTeammate(e.getName())){
             distancies.remove(e.getName());
             energies.remove(e.getName());
             eliminant = true;
         }
+        else{
+            anglesEquip.remove(e.getName());
+            eliminant = true;
+        }
     }
     
     public void onHitByBullet(HitByBulletEvent e){
+        //Ens movem i evitem tornar ser disparats.
         setTurnRight(normalRelativeAngleDegrees(90 - (getHeading() - e.getHeading())));
 		setAhead(dist);
 		dist *= -1;
@@ -97,6 +110,7 @@ public class Robot extends TeamRobot{
     }
 
     public String getTarget(){
+        // Es basa en la distancia per escollir el target.
         double min = 10000;
         String robotMesProper = "";
         for (Map.Entry<String, Double> set : distancies.entrySet()) {
@@ -106,19 +120,6 @@ public class Robot extends TeamRobot{
             } 
         }
         return robotMesProper;
-    }
-
-    public void disparControlat(double distanciaRobot, double bearing) {
-        if (distanciaRobot > 800 || getEnergy() < 15) {
-            //Disparem i ens apropem
-            fire(1);
-            //turnRight(normalRelativeAngleDegrees(getAngleMoviment(distanciaRobot, bearing) - getHeading()));
-            //ahead(distanciaRobot-800);
-        } else if (distanciaRobot > 400) {
-            fire(2);
-        } else {
-            fire(3);
-        }
     }
 
     public boolean friendlyFire(double angle){
@@ -140,6 +141,7 @@ public class Robot extends TeamRobot{
     }
     
     public double getAngleTo(double xOrg, double yOrg, double xDest, double yDest){
+        // Retorna l'angle de Punt(a) a punt(b).
         return Math.toDegrees(Math.atan2(xDest-xOrg, yDest-yOrg));
     }
     
